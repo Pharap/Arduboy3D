@@ -38,20 +38,18 @@ void ParticleSystem::Step()
 	}
 }
 
-void ParticleSystem::Draw(int x, int halfScale)
+void ParticleSystem::Draw(int x, int halfScale) const
 {
-	int scale = 2 * halfScale;
-	int8_t horizon = GetHorizon(x);
+	const int scale = (halfScale * 2);
+	const int8_t horizon = GetHorizon(x);
 	
 	for (auto & particle : this->particles)
 	{
 		if (!particle.IsActive())
 			continue;
 	
-		//int outX = x + ((particle.x * scale) >> 8);
-		//int outY = HORIZON + ((particle.y * scale) >> 8);
-		int outX = x + ((particle.x * scale) >> 8);
-		int outY = horizon + ((particle.y * scale) >> 8);
+		const int outX = (x + ((particle.x * scale) >> 8));
+		const int outY = (horizon + ((particle.y * scale) >> 8));
 
 		if((outX < 0) || (outX >= DISPLAY_WIDTH))
 			continue;
