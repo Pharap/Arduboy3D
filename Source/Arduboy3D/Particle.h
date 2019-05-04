@@ -11,7 +11,10 @@ struct Particle
 	int8_t velX, velY;
 	uint8_t life;
 
-	inline bool IsActive() { return x != -128; }
+	constexpr bool IsActive() const
+	{
+		return (life > 0);
+	}
 };
 
 struct ParticleSystem

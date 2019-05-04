@@ -5,7 +5,7 @@ void ParticleSystem::Init()
 {
 	for (int n = 0; n < PARTICLES_PER_SYSTEM; n++)
 	{
-		particles[n].x = -128;
+		particles[n].life = 0;
 	}
 }
 
@@ -20,11 +20,8 @@ void ParticleSystem::Step()
 			p.velY += gravity;
 			p.life--;
 
-			if (p.x + p.velX < -127 || p.x + p.velX > 127 || p.y + p.velY < -127 || p.life == 0)
-			{
-				p.x = -128;
+			if (p.x + p.velX < -127 || p.x + p.velX > 127 || p.y + p.velY < -127 || !p.IsActive())
 				continue;
-			}
 
 			if (p.y + p.velY >= 128)
 			{
