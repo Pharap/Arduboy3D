@@ -42,11 +42,6 @@ void ParticleSystem::Step()
 			particle.velX = 0;
 			particle.y = 127;
 		}
-
-		//if(particle.y > 64)
-		//{
-		//	particle.y = 64;
-		//}
 	}
 }
 
@@ -55,7 +50,7 @@ void ParticleSystem::Draw(int x, int halfScale) const
 	const int scale = (halfScale * 2);
 	const int8_t horizon = GetHorizon(x);
 	
-	for (auto & particle : this->particles)
+	for (const auto & particle : this->particles)
 	{
 		if (!particle.IsActive())
 			continue;
@@ -90,14 +85,14 @@ void ParticleSystem::Explode(uint8_t count)
 
 		if (searchExhausted || !particle.IsActive())
 		{
-			particle.x = (Random() & 31) - 16;
-			particle.y = (Random() & 31) - 16;
+			particle.x = ((Random() % 32) - 16);
+			particle.y = ((Random() % 32) - 16);
 
-			particle.velX = (Random() & 31) - 16;
-			particle.velY = (Random() & 31) - 25;
+			particle.velX = ((Random() % 32) - 16);
+			particle.velY = ((Random() % 32) - 25);
 
-			particle.life = (Random() & 15) + 6;
-			count--;
+			particle.life = ((Random() % 16) + 6);
+			--count;
 			
 			if(count == 0)
 				return;
