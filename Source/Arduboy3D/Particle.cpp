@@ -13,28 +13,28 @@ void ParticleSystem::Step()
 {
 	for (auto & particle : this->particles)
 	{
-		if (particle.IsActive())
+		if (!particle.IsActive())
+			continue;
+
+		particle.velY += gravity;
+		particle.life--;
+
+		if (particle.x + particle.velX < -127 || particle.x + particle.velX > 127 || particle.y + particle.velY < -127 || !particle.IsActive())
+			continue;
+
+		if (particle.y + particle.velY >= 128)
 		{
-			particle.velY += gravity;
-			particle.life--;
-
-			if (particle.x + particle.velX < -127 || particle.x + particle.velX > 127 || particle.y + particle.velY < -127 || !particle.IsActive())
-				continue;
-
-			if (particle.y + particle.velY >= 128)
-			{
-				particle.velY = particle.velX = 0;
-				particle.y = 127;
-			}
-
-			particle.x += particle.velX;
-			particle.y += particle.velY;
-
-			//if(particle.y > 64)
-			//{
-			//	particle.y = 64;
-			//}
+			particle.velY = particle.velX = 0;
+			particle.y = 127;
 		}
+
+		particle.x += particle.velX;
+		particle.y += particle.velY;
+
+		//if(particle.y > 64)
+		//{
+		//	particle.y = 64;
+		//}
 	}
 }
 
@@ -45,20 +45,20 @@ void ParticleSystem::Draw(int x, int halfScale)
 	
 	for (auto & particle : this->particles)
 	{
-		if (particle.IsActive())
-		{
-			//int outX = x + ((particle.x * scale) >> 8);
-			//int outY = HORIZON + ((particle.y * scale) >> 8);
-			int outX = x + ((particle.x * scale) >> 8);
-			int outY = horizon + ((particle.y * scale) >> 8);
+		if (!particle.IsActive())
+			continue;
+	
+		//int outX = x + ((particle.x * scale) >> 8);
+		//int outY = HORIZON + ((particle.y * scale) >> 8);
+		int outX = x + ((particle.x * scale) >> 8);
+		int outY = horizon + ((particle.y * scale) >> 8);
 
-			if (outX >= 0 && outY >= 0 && outX < DISPLAY_WIDTH - 1 && outY < DISPLAY_HEIGHT - 1 && halfScale >= wBuffer[outX])
-			{
-				PutPixel(outX, outY, COLOUR_BLACK);
-				PutPixel(outX + 1, outY, COLOUR_BLACK);
-				PutPixel(outX + 1, outY + 1, COLOUR_BLACK);
-				PutPixel(outX, outY + 1, COLOUR_BLACK);
-			}
+		if (outX >= 0 && outY >= 0 && outX < DISPLAY_WIDTH - 1 && outY < DISPLAY_HEIGHT - 1 && halfScale >= wBuffer[outX])
+		{
+			PutPixel(outX, outY, COLOUR_BLACK);
+			PutPixel(outX + 1, outY, COLOUR_BLACK);
+			PutPixel(outX + 1, outY + 1, COLOUR_BLACK);
+			PutPixel(outX, outY + 1, COLOUR_BLACK);
 		}
 	}
 }
