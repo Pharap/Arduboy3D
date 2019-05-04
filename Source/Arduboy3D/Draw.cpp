@@ -157,8 +157,9 @@ inline void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool
 		if (drawSlice)
 		{
 			uint8_t sliceMask = 0xff;
-			uint8_t sliceColour = wallColour;
-
+			uint8_t sliceColour = wallColour;		
+			static_cast<void>(sliceColour);
+			
 			if ((edgeLeft && x == x1) || (edgeRight && x == x2))
 			{
 				sliceMask = 0x00;
@@ -465,6 +466,8 @@ void DrawScaled2x(const uint8_t* data, int x, int y, uint8_t halfSize)
 		uint8_t v0 = 0;
 		uint8_t v1 = 0;
 		uint8_t v2;
+		
+		static_cast<void>(v0);
 
 		u2 = pgm_read_byte(&lut[(i + 1) / 2]);
 
@@ -552,6 +555,8 @@ void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 		uint8_t v0 = 0;
 		uint8_t v1 = 0;
 		uint8_t v2;
+		
+		static_cast<void>(v0);
 
 		u2 = pgm_read_byte(&lut[i + 1]);
 
