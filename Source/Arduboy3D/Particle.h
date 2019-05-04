@@ -9,8 +9,10 @@
 
 struct Particle
 {
-	int8_t x, y;
-	int8_t velX, velY;
+	int8_t x;
+	int8_t y;
+	int8_t velX;
+	int8_t velY;
 	uint8_t life;
 
 	constexpr bool IsActive() const
