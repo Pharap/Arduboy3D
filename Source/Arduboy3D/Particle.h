@@ -58,6 +58,7 @@ void ParticleSystem<particleCount>::Step()
 		}
 
 		particle.velY += gravity;
+		--particle.life;
 
 		const auto destinationX = (particle.x + particle.velX);
 
