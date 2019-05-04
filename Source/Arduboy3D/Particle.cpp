@@ -13,23 +13,35 @@ void ParticleSystem::Step()
 {
 	for (auto & particle : this->particles)
 	{
-		if (!particle.IsActive())
-			continue;
-
-		particle.velY += gravity;
-		particle.life--;
-
-		if (particle.x + particle.velX < -127 || particle.x + particle.velX > 127 || particle.y + particle.velY < -127 || !particle.IsActive())
-			continue;
-
-		if (particle.y + particle.velY >= 128)
+		if(particle.life < 2)
 		{
-			particle.velY = particle.velX = 0;
-			particle.y = 127;
+			particle.life = 0;
+			continue;
 		}
 
-		particle.x += particle.velX;
-		particle.y += particle.velY;
+		particle.velY += gravity;
+
+		const auto destinationX = (particle.x + particle.velX);
+
+		if ((destinationX < -127) || (destinationX > 127))
+			continue;
+		
+		const auto destinationY = (particle.y + particle.velY);
+
+		if (destinationY < -127)
+			continue;
+
+		if (destinationY < 128)
+		{
+			particle.x = destinationX;
+			particle.y = destinationY;
+		}
+		else
+		{
+			particle.velY = 0;
+			particle.velX = 0;
+			particle.y = 127;
+		}
 
 		//if(particle.y > 64)
 		//{
