@@ -643,7 +643,8 @@ void DrawObject(int16_t x, int16_t y)
 	DrawScaled(testSprite, screenX - screenW, GetHorizon(screenX) - screenW, (uint8_t) screenW);
 }
 
-void DrawParticleSystem(ParticleSystem* system, int16_t x, int16_t y)
+template< size_t particleCount >
+void DrawParticleSystem(ParticleSystem<particleCount>* system, int16_t x, int16_t y)
 {
 	int16_t relX, relZ;
 	int16_t screenX, screenW;
@@ -664,7 +665,7 @@ void DrawParticleSystem(ParticleSystem* system, int16_t x, int16_t y)
 	system->Draw(screenX, screenW);
 }
 
-ParticleSystem testParticles;
+ParticleSystem<PARTICLES_PER_SYSTEM> testParticles;
 
 void Render()
 {
