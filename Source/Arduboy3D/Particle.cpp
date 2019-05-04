@@ -1,40 +1,38 @@
 #include "Particle.h"
 #include "FixedMath.h"
 
+#include <stddef.h>
+
 void ParticleSystem::Init()
 {
-	for (int n = 0; n < PARTICLES_PER_SYSTEM; n++)
-	{
-		particles[n].life = 0;
-	}
+	for (auto & particle : this->particles)
+		particle.life = 0;
 }
 
 void ParticleSystem::Step()
 {
-	for (int n = 0; n < PARTICLES_PER_SYSTEM; n++)
+	for (auto & particle : this->particles)
 	{
-		Particle& p = particles[n];
-
-		if (p.IsActive())
+		if (particle.IsActive())
 		{
-			p.velY += gravity;
-			p.life--;
+			particle.velY += gravity;
+			particle.life--;
 
-			if (p.x + p.velX < -127 || p.x + p.velX > 127 || p.y + p.velY < -127 || !p.IsActive())
+			if (particle.x + particle.velX < -127 || particle.x + particle.velX > 127 || particle.y + particle.velY < -127 || !particle.IsActive())
 				continue;
 
-			if (p.y + p.velY >= 128)
+			if (particle.y + particle.velY >= 128)
 			{
-				p.velY = p.velX = 0;
-				p.y = 127;
+				particle.velY = particle.velX = 0;
+				particle.y = 127;
 			}
 
-			p.x += p.velX;
-			p.y += p.velY;
+			particle.x += particle.velX;
+			particle.y += particle.velY;
 
-			//if(p.y > 64)
+			//if(particle.y > 64)
 			//{
-			//	p.y = 64;
+			//	particle.y = 64;
 			//}
 		}
 	}
@@ -45,16 +43,14 @@ void ParticleSystem::Draw(int x, int halfScale)
 	int scale = 2 * halfScale;
 	int8_t horizon = GetHorizon(x);
 	
-	for (int n = 0; n < PARTICLES_PER_SYSTEM; n++)
+	for (auto & particle : this->particles)
 	{
-		Particle& p = particles[n];
-
-		if (p.IsActive())
+		if (particle.IsActive())
 		{
-			//int outX = x + ((p.x * scale) >> 8);
-			//int outY = HORIZON + ((p.y * scale) >> 8);
-			int outX = x + ((p.x * scale) >> 8);
-			int outY = horizon + ((p.y * scale) >> 8);
+			//int outX = x + ((particle.x * scale) >> 8);
+			//int outY = HORIZON + ((particle.y * scale) >> 8);
+			int outX = x + ((particle.x * scale) >> 8);
+			int outY = horizon + ((particle.y * scale) >> 8);
 
 			if (outX >= 0 && outY >= 0 && outX < DISPLAY_WIDTH - 1 && outY < DISPLAY_HEIGHT - 1 && halfScale >= wBuffer[outX])
 			{
@@ -71,26 +67,26 @@ void ParticleSystem::Explode(uint8_t count)
 {
 	bool searchExhausted = false;
 
-	for (int n = 0; n < PARTICLES_PER_SYSTEM && count; n++)
+	for (size_t index = 0; index < PARTICLES_PER_SYSTEM; ++index)
 	{
-		Particle& p = particles[n];
+		Particle & particle = particles[index];
 
-		if (searchExhausted || !p.IsActive())
+		if (searchExhausted || !particle.IsActive())
 		{
-			p.x = (Random() & 31) - 16;
-			p.y = (Random() & 31) - 16;
+			particle.x = (Random() & 31) - 16;
+			particle.y = (Random() & 31) - 16;
 
-			p.velX = (Random() & 31) - 16;
-			p.velY = (Random() & 31) - 25;
+			particle.velX = (Random() & 31) - 16;
+			particle.velY = (Random() & 31) - 25;
 
-			p.life = (Random() & 15) + 6;
+			particle.life = (Random() & 15) + 6;
 			count--;
 		}
 
-		if (n == PARTICLES_PER_SYSTEM - 1 && !searchExhausted)
+		if (index == PARTICLES_PER_SYSTEM - 1 && !searchExhausted)
 		{
 			searchExhausted = true;
-			n = 0;
+			index = 0;
 		}
 	}
 }
