@@ -621,8 +621,8 @@ int8_t GetHorizon(int16_t x)
 
 void DrawObject(int16_t x, int16_t y)
 {
-	int16_t relX, relZ;
-	int16_t screenX, screenW;
+	int16_t relX;
+	int16_t relZ;
 
 	TransformToViewSpace(x, y, &relX, &relZ);
 
@@ -630,10 +630,14 @@ void DrawObject(int16_t x, int16_t y)
 	if (relZ < CLIP_PLANE)
 		return;
 
-	if (relX < 0 && -2 * relZ > relX)
+	if ((relX < 0) && (2 * -relZ) > relX)
 		return;
-	if (relX > 0 && 2 * relZ < relX)
+
+	if ((relX > 0) && (2 * relZ) < relX)
 		return;
+
+	int16_t screenX;
+	int16_t screenW;
 
 	TransformToScreenSpace(relX, relZ, &screenX, &screenW);
 
@@ -645,6 +649,7 @@ void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x,
 {
 	int16_t relX;
 	int16_t relZ;
+	
 	TransformToViewSpace(x, y, &relX, &relZ);
 
 	// Frustum cull
@@ -653,7 +658,7 @@ void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x,
 
 	if ((relX < 0) && (2 * -relZ) > relX)
 		return;
-	
+
 	if ((relX > 0) && (2 * relZ) < relX)
 		return;
 
