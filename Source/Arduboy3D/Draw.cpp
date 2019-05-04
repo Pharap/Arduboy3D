@@ -444,107 +444,20 @@ const uint8_t testSprite[] PROGMEM =
 	0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
 };
 
-void DrawScaled2x(const uint8_t* data, int x, int y, uint8_t halfSize)
-{
-	uint8_t size = 2 * halfSize;
-
-	if (size > MAX_SPRITE_SIZE * 2)
-	{
-		return;
-	}
-
-	const uint8_t* lut = scaleLUT + ((halfSize / 2) * (halfSize / 2));
-
-	uint8_t u0 = 0;
-	uint8_t u1 = 0;
-	uint8_t u2;
-	uint8_t up, px, down;
-	int outX = x;
-
-	for (int i = 0; i < size && outX < DISPLAY_WIDTH; i++)
-	{
-		uint8_t v0 = 0;
-		uint8_t v1 = 0;
-		uint8_t v2;
-		
-		static_cast<void>(v0);
-
-		u2 = pgm_read_byte(&lut[(i + 1) / 2]);
-
-		up = 0;
-		px = pgm_read_byte(&data[0]);
-
-		if (outX >= 0 && wBuffer[outX] < halfSize)
-		{
-			int outY = y;
-
-			for (int j = 0; j < size && outY < DISPLAY_HEIGHT; j++)
-			{
-				v2 = pgm_read_byte(&lut[(j + 1) / 2]);
-				down = pgm_read_byte(&data[v2 * BASE_SPRITE_SIZE + u1]);
-
-				if (outY >= 0 && outY < DISPLAY_HEIGHT)
-				{
-					if (px)
-					{
-						if (i == 0 || j == 0 || i == size - 1 || j == size - 1)
-						{
-							PutPixel(outX, outY, COLOUR_BLACK);
-						}
-						else if (px == 2)
-						{
-							PutPixel(outX, outY, COLOUR_BLACK);
-						}
-						else
-						{
-							PutPixel(outX, outY, COLOUR_WHITE);
-						}
-					}
-					else
-					{
-						uint8_t left = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u0]);
-						uint8_t right = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u2]);
-
-						if (up | down | left | right)
-						{
-							PutPixel(outX, outY, COLOUR_BLACK);
-						}
-					}
-				}
-
-				v0 = v1;
-				v1 = v2;
-
-				up = px;
-				px = down;
-				outY++;
-			}
-		}
-
-		u0 = u1;
-		u1 = u2;
-		outX++;
-	}
-}
-
 void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 {
 	if (halfSize < 2)
-	{
 		return;
-	}
-
-	const uint8_t size = (halfSize * 2);
-
-	if (size > MAX_SPRITE_SIZE)
-	{
-		DrawScaled2x(data, x, y, halfSize);
+		
+	if (halfSize > MAX_SPRITE_SIZE)
 		return;
-	}
 	
-	const size_t halfSizeSquared = (halfSize * halfSize);
+	const uint8_t size = (halfSize * 2);
+	const bool isX2 = (size > MAX_SPRITE_SIZE);
+	const size_t quarterSize = (halfSize / 2);	
+	const size_t lutSize = (isX2) ? (quarterSize * quarterSize) : (halfSize * halfSize);
 
-	const uint8_t * lut = &scaleLUT[halfSizeSquared];
+	const uint8_t * lut = &scaleLUT[lutSize];
 
 	uint8_t u0 = 0;
 	uint8_t u1 = 0;
@@ -552,7 +465,8 @@ void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 
 	for (uint8_t i = 0; ((i < size) && (outX < DISPLAY_WIDTH)); ++i)
 	{
-		const uint8_t u2 = pgm_read_byte(&lut[i + 1]);
+		const size_t lutIndexI = (isX2) ? ((i + 1) / 2) : (i + 1);	
+		const uint8_t u2 = pgm_read_byte(&lut[lutIndexI]);
 		
 		//uint8_t v0 = 0;
 		//static_cast<void>(v0);
@@ -561,30 +475,34 @@ void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 		uint8_t up = 0;
 		uint8_t px = pgm_read_byte(&data[0]);
 
-		if ((outX >= 0) && (wBuffer[outX] < halfSize))
+		if (outX >= 0 && wBuffer[outX] < halfSize)
 		{
 			int outY = y;
 
-			for (uint8_t j = 0; ((j < size) && (outY < DISPLAY_HEIGHT)); ++j)
+			for (uint8_t j = 0; ((j < size) && (outY < DISPLAY_HEIGHT)); j++)
 			{
-				const uint8_t v2 = pgm_read_byte(&lut[j + 1]);
+				const size_t lutIndexJ = (isX2) ? ((j + 1) / 2) : (j + 1);
+				const uint8_t v2 = pgm_read_byte(&lut[lutIndexJ]);
 				const uint8_t down = pgm_read_byte(&data[v2 * BASE_SPRITE_SIZE + u1]);
 
-				if (px == 0)
+				if ((outX >= 0) && (wBuffer[outX] < halfSize))
 				{
-					const uint8_t left = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u0]);
-					const uint8_t right = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u2]);
+					if (px == 0)
+					{
+						const uint8_t left = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u0]);
+						const uint8_t right = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u2]);
 
-					if ((up | down | left | right) != 0)
-						PutPixel(outX, outY, COLOUR_BLACK);
-				}
-				else
-				{
-					const bool isBlack = ((i == 0) || (j == 0) || (i == (size - 1)) || (j == (size - 1)) || (px == 2));
-				
-					unsigned char colour = (isBlack) ? COLOUR_BLACK : COLOUR_WHITE;
+						if ((up | down | left | right) != 0)
+							PutPixel(outX, outY, COLOUR_BLACK);
+					}
+					else
+					{
+						const bool isBlack = ((i == 0) || (j == 0) || (i == (size - 1)) || (j == (size - 1)) || (px == 2));
+					
+						unsigned char colour = (isBlack) ? COLOUR_BLACK : COLOUR_WHITE;
 
-					PutPixel(outX, outY, colour);
+						PutPixel(outX, outY, colour);
+					}
 				}
 
 				//v0 = v1;
