@@ -534,82 +534,71 @@ void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 		return;
 	}
 
-	uint8_t size = halfSize * 2;
+	const uint8_t size = (halfSize * 2);
 
 	if (size > MAX_SPRITE_SIZE)
 	{
 		DrawScaled2x(data, x, y, halfSize);
 		return;
 	}
+	
+	const size_t halfSizeSquared = (halfSize * halfSize);
 
-	const uint8_t* lut = scaleLUT + ((halfSize) * (halfSize));
+	const uint8_t * lut = &scaleLUT[halfSizeSquared];
 
 	uint8_t u0 = 0;
 	uint8_t u1 = 0;
-	uint8_t u2;
-	uint8_t up, px, down;
 	int outX = x;
 
-	for (int i = 0; i < size && outX < DISPLAY_WIDTH; i++)
+	for (uint8_t i = 0; ((i < size) && (outX < DISPLAY_WIDTH)); ++i)
 	{
-		uint8_t v0 = 0;
-		uint8_t v1 = 0;
-		uint8_t v2;
+		const uint8_t u2 = pgm_read_byte(&lut[i + 1]);
 		
-		static_cast<void>(v0);
+		//uint8_t v0 = 0;
+		//static_cast<void>(v0);
+		
+		uint8_t v1 = 0;
+		uint8_t up = 0;
+		uint8_t px = pgm_read_byte(&data[0]);
 
-		u2 = pgm_read_byte(&lut[i + 1]);
-
-		up = 0;
-		px = pgm_read_byte(&data[0]);
-
-		if (outX >= 0 && wBuffer[outX] < halfSize)
+		if ((outX >= 0) && (wBuffer[outX] < halfSize))
 		{
 			int outY = y;
 
-			for (int j = 0; j < size && outY < DISPLAY_HEIGHT; j++)
+			for (uint8_t j = 0; ((j < size) && (outY < DISPLAY_HEIGHT)); ++j)
 			{
-				v2 = pgm_read_byte(&lut[j + 1]);
-				down = pgm_read_byte(&data[v2 * BASE_SPRITE_SIZE + u1]);
+				const uint8_t v2 = pgm_read_byte(&lut[j + 1]);
+				const uint8_t down = pgm_read_byte(&data[v2 * BASE_SPRITE_SIZE + u1]);
 
-				if (px)
+				if (px == 0)
 				{
-					if (i == 0 || j == 0 || i == size - 1 || j == size - 1)
-					{
+					const uint8_t left = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u0]);
+					const uint8_t right = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u2]);
+
+					if ((up | down | left | right) != 0)
 						PutPixel(outX, outY, COLOUR_BLACK);
-					}
-					else if (px == 2)
-					{
-						PutPixel(outX, outY, COLOUR_BLACK);
-					}
-					else
-					{
-						PutPixel(outX, outY, COLOUR_WHITE);
-					}
 				}
 				else
 				{
-					uint8_t left = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u0]);
-					uint8_t right = pgm_read_byte(&data[v1 * BASE_SPRITE_SIZE + u2]);
+					const bool isBlack = ((i == 0) || (j == 0) || (i == (size - 1)) || (j == (size - 1)) || (px == 2));
+				
+					unsigned char colour = (isBlack) ? COLOUR_BLACK : COLOUR_WHITE;
 
-					if (up | down | left | right)
-					{
-						PutPixel(outX, outY, COLOUR_BLACK);
-					}
+					PutPixel(outX, outY, colour);
 				}
 
-				v0 = v1;
+				//v0 = v1;
 				v1 = v2;
 
 				up = px;
 				px = down;
-				outY++;
+				++outY;
 			}
 		}
 
 		u0 = u1;
 		u1 = u2;
-		outX++;
+		++outX;
 	}
 }
 
