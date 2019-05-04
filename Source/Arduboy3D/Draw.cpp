@@ -266,22 +266,22 @@ inline bool isFrustrumClipped(int16_t x, int16_t y)
 	return false;
 }
 
-inline void TransformToViewSpace(int16_t x, int16_t y, int16_t* outX, int16_t* outY)
+inline void TransformToViewSpace(int16_t x, int16_t y, int16_t & outX, int16_t & outY)
 {
 	int32_t relX = x - camera.x;
 	int32_t relY = y - camera.y;
-	*outY = (int16_t)((camera.rotCos * relX) >> 8) - (int16_t)((camera.rotSin * relY) >> 8);
-	*outX = (int16_t)((camera.rotSin * relX) >> 8) + (int16_t)((camera.rotCos * relY) >> 8);
+	outY = (int16_t)((camera.rotCos * relX) >> 8) - (int16_t)((camera.rotSin * relY) >> 8);
+	outX = (int16_t)((camera.rotSin * relX) >> 8) + (int16_t)((camera.rotCos * relY) >> 8);
 }
 
-inline void TransformToScreenSpace(int16_t viewX, int16_t viewZ, int16_t* outX, int16_t* outW)
+inline void TransformToScreenSpace(int16_t viewX, int16_t viewZ, int16_t & outX, int16_t & outW)
 {
 	// apply perspective projection
-	*outX = (int16_t)((int32_t)viewX * NEAR_PLANE * CAMERA_SCALE / viewZ);
-	*outW = (int16_t)((CELL_SIZE / 2 * NEAR_PLANE * CAMERA_SCALE) / viewZ);
+	outX = (int16_t)((int32_t)viewX * NEAR_PLANE * CAMERA_SCALE / viewZ);
+	outW = (int16_t)((CELL_SIZE / 2 * NEAR_PLANE * CAMERA_SCALE) / viewZ);
 
 	// transform into screen space
-	*outX = (int16_t)((DISPLAY_WIDTH / 2) + *outX);
+	outX = (int16_t)((DISPLAY_WIDTH / 2) + outX);
 }
 
 #if WITH_TEXTURES
@@ -295,8 +295,8 @@ void DrawWall(int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool edgeLeft, boo
 	uint8_t u1 = 0, u2 = 128;
 #endif
 
-	TransformToViewSpace(x1, y1, &viewX1, &viewZ1);
-	TransformToViewSpace(x2, y2, &viewX2, &viewZ2);
+	TransformToViewSpace(x1, y1, viewX1, viewZ1);
+	TransformToViewSpace(x2, y2, viewX2, viewZ2);
 
 	// Frustum cull
 	if (viewX2 < 0 && -2 * viewZ2 > viewX2)
@@ -624,7 +624,7 @@ void DrawObject(int16_t x, int16_t y)
 	int16_t relX;
 	int16_t relZ;
 
-	TransformToViewSpace(x, y, &relX, &relZ);
+	TransformToViewSpace(x, y, relX, relZ);
 
 	// Frustum cull
 	if (relZ < CLIP_PLANE)
@@ -639,7 +639,7 @@ void DrawObject(int16_t x, int16_t y)
 	int16_t screenX;
 	int16_t screenW;
 
-	TransformToScreenSpace(relX, relZ, &screenX, &screenW);
+	TransformToScreenSpace(relX, relZ, screenX, screenW);
 
 	DrawScaled(testSprite, screenX - screenW, GetHorizon(screenX) - screenW, (uint8_t) screenW);
 }
@@ -650,7 +650,7 @@ void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x,
 	int16_t relX;
 	int16_t relZ;
 	
-	TransformToViewSpace(x, y, &relX, &relZ);
+	TransformToViewSpace(x, y, relX, relZ);
 
 	// Frustum cull
 	if (relZ < CLIP_PLANE)
@@ -665,7 +665,7 @@ void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x,
 	int16_t screenX;
 	int16_t screenW;
 
-	TransformToScreenSpace(relX, relZ, &screenX, &screenW);
+	TransformToScreenSpace(relX, relZ, screenX, screenW);
 
 	system.Draw(screenX, screenW);
 }
