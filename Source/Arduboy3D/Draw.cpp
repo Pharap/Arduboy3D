@@ -22,7 +22,7 @@ int8_t horizonBuffer[DISPLAY_WIDTH];
 uint8_t currentWallId = 0;
 
 #if WITH_TEXTURES
-inline void DrawWallLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col)
+void DrawWallLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col)
 {
 //	if(x1 < 0 || y1 < 0 || x2 >= DISPLAY_WIDTH || y2 >= DISPLAY_HEIGHT)
 //		return;
@@ -110,9 +110,9 @@ inline void DrawWallLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t
 #endif
 
 #if WITH_TEXTURES
-inline void DrawWallSegment(const uint8_t* texture, int16_t x1, int16_t w1, int16_t x2, int16_t w2, uint8_t u1clip, uint8_t u2clip, bool edgeLeft, bool edgeRight, bool shadeEdge)
+void DrawWallSegment(const uint8_t* texture, int16_t x1, int16_t w1, int16_t x2, int16_t w2, uint8_t u1clip, uint8_t u2clip, bool edgeLeft, bool edgeRight, bool shadeEdge)
 #else
-inline void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLeft, bool edgeRight, bool shadeEdge)
+void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLeft, bool edgeRight, bool shadeEdge)
 #endif
 {
 	if (x1 < 0)
@@ -256,7 +256,7 @@ inline void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool
 #endif
 }
 
-inline bool isFrustrumClipped(int16_t x, int16_t y)
+bool isFrustrumClipped(int16_t x, int16_t y)
 {
 	if ((camera.clipCos * (x - camera.cellX) - camera.clipSin * (y - camera.cellY)) < -512)
 		return true;
@@ -266,7 +266,7 @@ inline bool isFrustrumClipped(int16_t x, int16_t y)
 	return false;
 }
 
-inline void TransformToViewSpace(int16_t x, int16_t y, int16_t & outX, int16_t & outY)
+void TransformToViewSpace(int16_t x, int16_t y, int16_t & outX, int16_t & outY)
 {
 	int32_t relX = x - camera.x;
 	int32_t relY = y - camera.y;
@@ -274,7 +274,7 @@ inline void TransformToViewSpace(int16_t x, int16_t y, int16_t & outX, int16_t &
 	outX = (int16_t)((camera.rotSin * relX) >> 8) + (int16_t)((camera.rotCos * relY) >> 8);
 }
 
-inline void TransformToScreenSpace(int16_t viewX, int16_t viewZ, int16_t & outX, int16_t & outW)
+void TransformToScreenSpace(int16_t viewX, int16_t viewZ, int16_t & outX, int16_t & outW)
 {
 	// apply perspective projection
 	outX = (int16_t)((int32_t)viewX * NEAR_PLANE * CAMERA_SCALE / viewZ);
