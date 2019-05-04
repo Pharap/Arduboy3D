@@ -66,8 +66,9 @@ void ParticleSystem::Draw(int x, int halfScale)
 void ParticleSystem::Explode(uint8_t count)
 {
 	bool searchExhausted = false;
-
-	for (size_t index = 0; index < PARTICLES_PER_SYSTEM; ++index)
+	
+	size_t index = 0;
+	while(true)
 	{
 		Particle & particle = particles[index];
 
@@ -81,9 +82,16 @@ void ParticleSystem::Explode(uint8_t count)
 
 			particle.life = (Random() & 15) + 6;
 			count--;
+			
+			if(count == 0)
+				return;
 		}
 
-		if (index == PARTICLES_PER_SYSTEM - 1 && !searchExhausted)
+		if (index < (PARTICLES_PER_SYSTEM - 1))
+		{
+			++index;
+		}
+		else
 		{
 			searchExhausted = true;
 			index = 0;
