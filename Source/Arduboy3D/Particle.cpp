@@ -53,13 +53,19 @@ void ParticleSystem::Draw(int x, int halfScale)
 		int outX = x + ((particle.x * scale) >> 8);
 		int outY = horizon + ((particle.y * scale) >> 8);
 
-		if (outX >= 0 && outY >= 0 && outX < DISPLAY_WIDTH - 1 && outY < DISPLAY_HEIGHT - 1 && halfScale >= wBuffer[outX])
-		{
-			PutPixel(outX, outY, COLOUR_BLACK);
-			PutPixel(outX + 1, outY, COLOUR_BLACK);
-			PutPixel(outX + 1, outY + 1, COLOUR_BLACK);
-			PutPixel(outX, outY + 1, COLOUR_BLACK);
-		}
+		if((outX < 0) || (outX >= DISPLAY_WIDTH))
+			continue;
+
+		if((outY < 0) || (outY >= DISPLAY_HEIGHT))
+			continue;
+	
+		if(halfScale < wBuffer[outX])
+			continue;
+
+		PutPixel(outX, outY, COLOUR_BLACK);
+		PutPixel(outX + 1, outY, COLOUR_BLACK);
+		PutPixel(outX + 1, outY + 1, COLOUR_BLACK);
+		PutPixel(outX, outY + 1, COLOUR_BLACK);
 	}
 }
 
