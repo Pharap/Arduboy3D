@@ -29,80 +29,82 @@ void DrawWallLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t col)
 
 	if(x1 > x2)
 		return;
-	
+
 	if (y1 < 0)
 	{
 		if(y2 < 0)
 			return;
-		
+
 		if(y2 != y1)
-			x1 += (0 - y1) * (x2 - x1) / (y2 - y1);
+			x1 += ((-y1) * (x2 - x1)) / (y2 - y1);
+
 		y1 = 0;
 	}
-	if (y2 > DISPLAY_HEIGHT - 1)
+	
+	constexpr int displayEnd = (DISPLAY_HEIGHT - 1);
+
+	if (y2 > displayEnd)
 	{
-		if(y1 > DISPLAY_HEIGHT - 1)
+		if(y1 > displayEnd)
 			return;
-		
+
 		if(y2 != y1)
-			x2 += (((DISPLAY_HEIGHT - 1) - y2) * (x1 - x2)) / (y1 - y2);
-		y2 = DISPLAY_HEIGHT - 1;
+			x2 += (((displayEnd) - y2) * (x1 - x2)) / (y1 - y2);
+
+		y2 = displayEnd;
 	}
 	
 	if (x1 < 0)
 	{
 		if(x2 != x1)
-		{
-			y1 += ((0 - x1) * (y2 - y1)) / (x2 - x1);
-		}
+			y1 += ((-x1) * (y2 - y1)) / (x2 - x1);
+
 		x1 = 0;
 	}
 
-	int16_t dx = x2 - x1;
-	int16_t yerror = dx / 2;
-	int16_t y = y1;
 	int16_t dy;
 	int8_t ystep;
 
 	if (y1 < y2)
 	{
-		dy = y2 - y1;
+		dy = (y2 - y1);
 		ystep = 1;
 	}
 	else
 	{
-		dy = y1 - y2;
+		dy = (y1 - y2);
 		ystep = -1;
 	}
+	
+	const int16_t dx = (x2 - x1);
+	
+	int16_t y = y1;
+	int16_t yerror = (dx / 2);
 
-	for (int x = x1; x <= x2 && x < DISPLAY_WIDTH; x++)
+	for (int x = x1; ((x <= x2) && (x < DISPLAY_WIDTH)); ++x)
 	{
 		//int w = y > HORIZON ? y - HORIZON : HORIZON - y;
-		bool drawSlice = wallIdBuffer[x] == currentWallId;// && wBuffer[x] >= w;
-		int8_t horizon = horizonBuffer[x] - HORIZON;		
+		const bool drawSlice = (wallIdBuffer[x] == currentWallId);
+		const int8_t horizon = (horizonBuffer[x] - HORIZON);		
 
 		if (drawSlice)
-		{
 			PutPixel(x, horizon + y, col);
-		}
 
 		yerror -= dy;
 
 		while (yerror < 0)
 		{
 			y += ystep;
-			
+
 			//if(y < 0 || y >= DISPLAY_HEIGHT)
 			//	return;
-			
+
 			yerror += dx;
 
-			if (drawSlice && yerror < 0)
-			{
+			if (drawSlice && (yerror < 0))
 				PutPixel(x, horizon + y, col);
-			}
 
-			if (x == x2 && y == y2)
+			if ((x == x2) && (y == y2))
 				break;
 		}
 	}
