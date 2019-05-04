@@ -613,13 +613,10 @@ void DrawScaled(const uint8_t* data, int x, int y, uint8_t halfSize)
 	}
 }
 
-inline int8_t GetHorizon(int16_t x)
+int8_t GetHorizon(int16_t x)
 {
-	if (x < 0)
-		x = 0;
-	if (x >= DISPLAY_WIDTH)
-		x = DISPLAY_WIDTH - 1;
-	return horizonBuffer[x];
+	const int index = (x < 0) ? 0 : (x >= DISPLAY_WIDTH) ? (DISPLAY_WIDTH - 1) : x;
+	return horizonBuffer[index];
 }
 
 void DrawObject(int16_t x, int16_t y)
