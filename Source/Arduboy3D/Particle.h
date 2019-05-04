@@ -15,7 +15,12 @@ struct Particle
 
 	constexpr bool IsActive() const
 	{
-		return (life > 0);
+		return (this->life > 0);
+	}
+	
+	void Deactivate()
+	{
+		this->life = 0;
 	}
 };
 
@@ -38,7 +43,7 @@ template< size_t particleCount >
 void ParticleSystem<particleCount>::Init()
 {
 	for (auto & particle : this->particles)
-		particle.life = 0;
+		particle.Deactivate();
 }
 
 template< size_t particleCount >
@@ -48,7 +53,7 @@ void ParticleSystem<particleCount>::Step()
 	{
 		if(particle.life < 2)
 		{
-			particle.life = 0;
+			particle.Deactivate();
 			continue;
 		}
 
@@ -58,7 +63,7 @@ void ParticleSystem<particleCount>::Step()
 
 		if ((destinationX < -127) || (destinationX > 127))
 			continue;
-		
+
 		const auto destinationY = (particle.y + particle.velY);
 
 		if (destinationY < -127)
@@ -111,6 +116,8 @@ void ParticleSystem<particleCount>::Draw(int x, int halfScale) const
 template< size_t particleCount >
 void ParticleSystem<particleCount>::Explode(uint8_t count)
 {
+	constexpr size_t particleCount = ParticleSystem::particleCount;
+
 	bool searchExhausted = false;
 	
 	size_t index = 0;
@@ -133,7 +140,7 @@ void ParticleSystem<particleCount>::Explode(uint8_t count)
 				return;
 		}
 
-		if (index < (PARTICLES_PER_SYSTEM - 1))
+		if (index < (particleCount - 1))
 		{
 			++index;
 		}
