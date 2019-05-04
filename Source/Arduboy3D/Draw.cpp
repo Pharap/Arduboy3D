@@ -644,7 +644,7 @@ void DrawObject(int16_t x, int16_t y)
 }
 
 template< size_t particleCount >
-void DrawParticleSystem(ParticleSystem<particleCount>* system, int16_t x, int16_t y)
+void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x, int16_t y)
 {
 	int16_t relX, relZ;
 	int16_t screenX, screenW;
@@ -662,7 +662,7 @@ void DrawParticleSystem(ParticleSystem<particleCount>* system, int16_t x, int16_
 
 	TransformToScreenSpace(relX, relZ, &screenX, &screenW);
 
-	system->Draw(screenX, screenW);
+	system.Draw(screenX, screenW);
 }
 
 ParticleSystem<PARTICLES_PER_SYSTEM> testParticles;
@@ -713,5 +713,5 @@ void Render()
 		counter = 0;
 	}
 	testParticles.Step();
-	DrawParticleSystem(&testParticles, 1 * CELL_SIZE + CELL_SIZE / 2, 1 * CELL_SIZE + CELL_SIZE / 2);
+	DrawParticleSystem(testParticles, 1 * CELL_SIZE + CELL_SIZE / 2, 1 * CELL_SIZE + CELL_SIZE / 2);
 }
