@@ -619,6 +619,20 @@ int8_t GetHorizon(int16_t x)
 	return horizonBuffer[index];
 }
 
+bool canCullWithFrustum(int16_t relX, int16_t relZ)
+{	
+	if (relZ < CLIP_PLANE)
+		return true;
+
+	if ((relX < 0) && (2 * -relZ) > relX)
+		return true;
+
+	if ((relX > 0) && (2 * relZ) < relX)
+		return true;
+		
+	return false;
+}
+
 void DrawObject(int16_t x, int16_t y)
 {
 	int16_t relX;
@@ -627,20 +641,14 @@ void DrawObject(int16_t x, int16_t y)
 	TransformToViewSpace(x, y, relX, relZ);
 
 	// Frustum cull
-	if (relZ < CLIP_PLANE)
-		return;
-
-	if ((relX < 0) && (2 * -relZ) > relX)
-		return;
-
-	if ((relX > 0) && (2 * relZ) < relX)
+	if(canCullWithFrustum(relX, relZ))
 		return;
 
 	int16_t screenX;
 	int16_t screenW;
 
 	TransformToScreenSpace(relX, relZ, screenX, screenW);
-
+	
 	DrawScaled(testSprite, screenX - screenW, GetHorizon(screenX) - screenW, (uint8_t) screenW);
 }
 
@@ -653,13 +661,7 @@ void DrawParticleSystem(const ParticleSystem<particleCount> & system, int16_t x,
 	TransformToViewSpace(x, y, relX, relZ);
 
 	// Frustum cull
-	if (relZ < CLIP_PLANE)
-		return;
-
-	if ((relX < 0) && (2 * -relZ) > relX)
-		return;
-
-	if ((relX > 0) && (2 * relZ) < relX)
+	if(canCullWithFrustum(relX, relZ))
 		return;
 
 	int16_t screenX;
