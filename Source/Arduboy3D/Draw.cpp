@@ -127,9 +127,8 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 		edgeLeft = false;
 	}
 
-	int16_t dx = x2 - x1;
-	int16_t werror = dx / 2;
-	int16_t w = w1;
+	const int16_t dx = (x2 - x1);
+	
 	int16_t dw;
 	int8_t wstep;
 
@@ -145,24 +144,26 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 		dw = w1 - w2;
 		wstep = -1;
 	}
+	
+	int16_t werror = (dx / 2);
+	int16_t w = w1;
 
 	constexpr uint8_t wallColour = COLOUR_WHITE;
 	constexpr uint8_t edgeColour = COLOUR_BLACK;
 
-	for (int x = x1; x < DISPLAY_WIDTH; x++)
+	for (int x = x1; x < DISPLAY_WIDTH; ++x)
 	{
-		bool drawSlice = x >= 0 && wBuffer[x] < w;
-		bool shadeSlice = shadeEdge && (x & 1) == 0;		
-		
-		int8_t horizon = horizonBuffer[x];
+		const int8_t horizon = horizonBuffer[x];
 
+		const bool drawSlice = ((x >= 0) && (wBuffer[x] < w));
 		if (drawSlice)
 		{
 			uint8_t sliceMask = 0xff;
 			uint8_t sliceColour = wallColour;		
 			static_cast<void>(sliceColour);
 			
-			if ((edgeLeft && x == x1) || (edgeRight && x == x2))
+			const bool shadeSlice = (shadeEdge && ((x & 1) == 0));
+			if ((edgeLeft && (x == x1)) || (edgeRight && (x == x2)))
 			{
 				sliceMask = 0x00;
 				sliceColour = edgeColour;
@@ -172,20 +173,19 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 				sliceMask = 0x55;
 			}
 
-			int8_t extent = w > 64 ? 64 : w;
+			const int8_t extent = (w > 64) ? 64 : w;
 			DrawVLine(x, horizon - extent, horizon + extent, sliceMask);
 			PutPixel(x, horizon + extent, edgeColour);
 			PutPixel(x, horizon - extent, edgeColour);
 
 			wallIdBuffer[x] = currentWallId;
-			if (w > 255)
-				wBuffer[x] = 255;
-			else
-				wBuffer[x] = w;
+			wBuffer[x] = (w > 255) ? 255 : w;
 		}
 
 		if (x == x2)
 			break;
+			
+		constexpr int halfDisplayHeight = (DISPLAY_HEIGHT / 2);
 
 		werror -= dw;
 
@@ -194,9 +194,9 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 			w += wstep;
 			werror += dx;
 
-			if (drawSlice && werror < 0 && w <= DISPLAY_HEIGHT / 2)
+			if (drawSlice && (werror < 0) && (w <= halfDisplayHeight))
 			{
-				PutPixel(x, horizon + w - 1, edgeColour);
+				PutPixel(x, horizon + (w - 1), edgeColour);
 				PutPixel(x, horizon - w, edgeColour);
 			}
 		}
@@ -205,19 +205,24 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 #if WITH_TEXTURES
 	if (w1 < MIN_TEXTURE_DISTANCE || w2 < MIN_TEXTURE_DISTANCE || !texture)
 		return;
+
 	if(u1clip == u2clip)
 		return;
 
-	const uint8_t* texPtr = texture;
-	uint8_t numLines = pgm_read_byte(texPtr++);
-	while (numLines)
+	size_t index = 0;
+	uint8_t numLines = pgm_read_byte(&texture[index]);
+	++index;
+	
+	while (numLines > 0)
 	{
-		numLines--;
+		--numLines;
 		
-		uint8_t u1 = pgm_read_byte(texPtr++);
-		uint8_t v1 = pgm_read_byte(texPtr++);
-		uint8_t u2 = pgm_read_byte(texPtr++);
-		uint8_t v2 = pgm_read_byte(texPtr++);
+		uint8_t u1 = pgm_read_byte(&texture[index + 0]);
+		uint8_t v1 = pgm_read_byte(&texture[index + 1]);
+		uint8_t u2 = pgm_read_byte(&texture[index + 2]);		
+		uint8_t v2 = pgm_read_byte(&texture[index + 3]);
+		
+		index += 4;
 
 		//if(u1clip != 0 || u2clip != 128)
 		//	continue;
@@ -229,26 +234,29 @@ void DrawWallSegment(int16_t x1, int16_t w1, int16_t x2, int16_t w2, bool edgeLe
 		{
 			if(u2 != u1)
 				v1 += (u1clip - u1) * (v2 - v1) / (u2 - u1);
+
 			u1 = u1clip;
 		}
+
 		if (u2 > u2clip)
 		{
 			if (u2 != u1)
 				v2 += (u2clip - u2) * (v1 - v2) / (u1 - u2);
+
 			u2 = u2clip;
 		}
 		
 		u1 = (128 * (u1 - u1clip)) / (u2clip - u1clip);
 		u2 = (128 * (u2 - u1clip)) / (u2clip - u1clip);
 
-		int16_t outU1 = (((int32_t)u1 * dx) >> 7) + x1;
-		int16_t outU2 = (((int32_t)u2 * dx) >> 7) + x1;
+		const int16_t outU1 = (((static_cast<int32_t>(u1) * dx) >> 7) + x1);
+		const int16_t outU2 = (((static_cast<int32_t>(u2) * dx) >> 7) + x1);
 
-		int16_t interpw1 = ((u1 * (w2 - w1)) >> 7) + w1;
-		int16_t interpw2 = ((u2 * (w2 - w1)) >> 7) + w1;
+		const int16_t interpw1 = (((u1 * (w2 - w1)) >> 7) + w1);
+		const int16_t interpw2 = (((u2 * (w2 - w1)) >> 7) + w1);
 
-		int16_t outV1 = (interpw1 * v1) >> 6;
-		int16_t outV2 = (interpw2 * v2) >> 6;
+		const int16_t outV1 = ((interpw1 * v1) >> 6);
+		const int16_t outV2 = ((interpw2 * v2) >> 6);
 
 		//uint8_t horizon = horizonBuffer[x]
 		//DrawLine(ScreenSurface, outU1, HORIZON - interpw1 + outV1, outU2, HORIZON - interpw2 + outV2, edgeColour, edgeColour, edgeColour);
